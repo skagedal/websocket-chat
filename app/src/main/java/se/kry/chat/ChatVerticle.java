@@ -12,11 +12,16 @@ import io.vertx.redis.client.RedisOptions;
 import io.vertx.redis.client.Response;
 
 public class ChatVerticle extends AbstractVerticle {
-  Redis redis;
-  RoomService roomService;
+  private final Integer port;
+  private Redis redis;
+  private RoomService roomService;
+
+  public ChatVerticle(Integer port) {
+    this.port = port;
+  }
 
   @Override
-  public void start(Promise<Void> startPromise) throws Exception {
+  public void start(Promise<Void> startPromise) {
     final var options = new HttpServerOptions()
         .setLogActivity(true);
 
@@ -33,8 +38,11 @@ public class ChatVerticle extends AbstractVerticle {
     vertx
         .createHttpServer(options)
         .requestHandler(router)
-        .listen(10001)
-        .onComplete(result -> startPromise.complete());
+        .listen(port)
+        .onComplete(result -> {
+          System.out.printf("Listening to port %d\n", port);
+          startPromise.complete();
+        });
   }
 
   private Future<Void> chat(RoutingContext routingContext) {
