@@ -1,0 +1,30 @@
+plugins {
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "io.vertx:vertx-core:4.2.1"
+    implementation 'io.vertx:vertx-web:4.2.1'
+    implementation 'io.vertx:vertx-redis-client:4.2.1'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.2'
+}
+
+application {
+    mainClass = 'se.kry.chat.App'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
