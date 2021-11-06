@@ -1,5 +1,12 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+}
+
 plugins {
-    id 'application'
+    id "application"
+    id "com.diffplug.spotless" version "5.17.1"
 }
 
 repositories {
@@ -34,6 +41,13 @@ java {
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:all" << "-Werror"
 }
+
+spotless {
+    java {
+        googleJavaFormat()
+    }
+}
+
 tasks.named('test') {
     useJUnitPlatform()
 }
