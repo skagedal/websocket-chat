@@ -1,5 +1,7 @@
 # Chat
 
+[This is a toy project.]
+
 ## Redis
 
 Start up redis:
