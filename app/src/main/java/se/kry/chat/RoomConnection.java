@@ -1,12 +1,16 @@
 package se.kry.chat;
 
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.ServerWebSocket;
-import io.vertx.redis.client.RedisAPI;
-import io.vertx.redis.client.RedisConnection;
+import io.vertx.rxjava3.core.buffer.Buffer;
+import io.vertx.rxjava3.core.http.ServerWebSocket;
+import io.vertx.rxjava3.redis.client.RedisAPI;
+import io.vertx.rxjava3.redis.client.RedisConnection;
+import io.vertx.rxjava3.redis.client.Response;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RoomConnection {
+  private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
   private final String room;
   private final String roomContentsKey;
   private final String roomChannelKey;
@@ -37,17 +41,25 @@ public class RoomConnection {
           System.out.printf("Received: %s", buffer);
           publishMessage(buffer);
         })
-        .closeHandler(__ -> System.out.println("Close-handler"))
-        .drainHandler(__ -> System.out.println("Drain-handler"))
-        .endHandler(__ -> System.out.println("End-handler"));
+        .closeHandler(__ -> logger.info("Close handler called"))
+        .drainHandler(__ -> logger.info("Drain handler called"))
+        .endHandler(__ -> logger.info("End handler called"));
   }
 
   private void showLatest() {
-    redisAPI.lrange(roomContentsKey, "-10", "-1").onSuccess(response -> {
-      for(var message : response) {
-        webSocket.writeTextMessage(message.toString());
-      }
-    });
+    redisAPI
+        .lrange(roomContentsKey, "-10", "-1")
+        .subscribe(
+            this::writeAllMessages,
+            throwable -> logger.error("Fetching messages", throwable)
+        )
+        .isDisposed();
+  }
+
+  private void writeAllMessages(Response response) {
+    for(var message : response) {
+      webSocket.writeTextMessage(message.toString());
+    }
   }
 
   private void publishMessage(Buffer buffer) {
