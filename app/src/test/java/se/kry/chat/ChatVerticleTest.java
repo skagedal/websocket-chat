@@ -16,12 +16,12 @@ class ChatVerticleTest {
     final var api = RedisAPI.api(redis);
 
     final var beforeSetGetResponse = api.rxGet("foo").blockingGet();
-    assertNull(beforeSetGetResponse);
+    assertNull(beforeSetGetResponse, "The value should not be set before we set it");
 
     final var setResponse = api.rxSet(List.of("foo", "bar")).toSingle().blockingGet().toString();
-    assertEquals("OK", setResponse);
+    assertEquals("OK", setResponse, "Setting message should respond OK");
 
     final var getResponse = api.rxGet("foo").toSingle().blockingGet().toString();
-    assertEquals("bar", getResponse);
+    assertEquals("bar", getResponse, "After we have set the value, we should be able to get i");
   }
 }

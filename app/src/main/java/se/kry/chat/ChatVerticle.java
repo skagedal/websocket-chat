@@ -10,8 +10,11 @@ import io.vertx.rxjava3.ext.web.RoutingContext;
 import io.vertx.rxjava3.redis.client.Redis;
 import io.vertx.rxjava3.redis.client.RedisAPI;
 import io.vertx.rxjava3.redis.client.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ChatVerticle extends AbstractVerticle {
+  private static final Logger logger = LoggerFactory.getLogger(ChatVerticle.class);
   private final Integer port;
   private Redis redis;
   private RoomService roomService;
@@ -38,9 +41,7 @@ public class ChatVerticle extends AbstractVerticle {
         .createHttpServer(options)
         .requestHandler(router)
         .listen(port)
-        .doOnSuccess(result -> {
-          System.out.printf("Listening on port %d\n", result.actualPort());
-        })
+        .doOnSuccess(result -> logger.info("Listening on port {}", result.actualPort()))
         .ignoreElement();
   }
 
@@ -55,7 +56,7 @@ public class ChatVerticle extends AbstractVerticle {
         .flatMapMaybe(__ -> Maybe.just(new Object()));
   }
 
-  private Maybe<Health> health(RoutingContext routingContext) {
+  private Maybe<Health> health(RoutingContext ignoredRoutingContext) {
     return RedisAPI.api(redis)
         .incr("count")
         .map(Response::toInteger)

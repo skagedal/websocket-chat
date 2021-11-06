@@ -6,6 +6,7 @@ buildscript {
 
 plugins {
     id "application"
+    id "pmd"
     id "com.diffplug.spotless" version "5.17.1"
     id "com.github.ben-manes.versions" version "0.39.0"
 }
@@ -43,6 +44,18 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:all" << "-Werror"
 }
 
+pmd {
+    //  consoleOutput = true
+    ruleSets = []
+    ruleSetConfig = resources.text.fromFile("pmd.xml")
+}
+
+// Testing
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
 // Spotless disabled due to issue: https://github.com/diffplug/spotless/issues/941
 
 //spotless {
@@ -51,6 +64,18 @@ tasks.withType(JavaCompile) {
 //    }
 //}
 
-tasks.named('test') {
-    useJUnitPlatform()
+// Dependency updates
+
+// Example check to exclude non-stable versions in recommendations from https://github.com/ben-manes/gradle-versions-plugin
+def isNonStable = { String version ->
+    def stableKeyword = ['RELEASE', 'FINAL', 'GA'].any { it -> version.toUpperCase().contains(it) }
+    def regex = /^[0-9,.v-]+(-r)?$/
+    return !stableKeyword && !(version ==~ regex)
 }
+
+tasks.named("dependencyUpdates").configure {
+    rejectVersionIf {
+        isNonStable(it.candidate.version)
+    }
+}
+dependencyUpdates.gradleReleaseChannel="current"

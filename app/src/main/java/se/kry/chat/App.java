@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class App {
-  private static Logger logger = LoggerFactory.getLogger(App.class);
+  private static final Logger logger = LoggerFactory.getLogger(App.class);
   public static void main(String[] args) {
     final var port = Arrays.stream(args).findFirst().map(Integer::parseInt).orElse(10001);
     Vertx.vertx()

@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 public class RoomConnection {
   private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
-  private final String room;
   private final String roomContentsKey;
   private final String roomChannelKey;
   private final String username;
@@ -20,7 +19,6 @@ public class RoomConnection {
   private final RedisAPI redisAPI;
 
   public RoomConnection(String room, String username, ServerWebSocket webSocket, RedisConnection redisConnection) {
-    this.room = room;
     this.roomContentsKey = "contents_" + room;
     this.roomChannelKey = "channel_" + room;
     this.username = username;
@@ -38,7 +36,7 @@ public class RoomConnection {
   private void handleWebSocket() {
     webSocket
         .handler(buffer -> {
-          System.out.printf("Received: %s", buffer);
+          logger.info("Received {}", buffer);
           publishMessage(buffer);
         })
         .closeHandler(__ -> logger.info("Close handler called"))
@@ -70,7 +68,7 @@ public class RoomConnection {
 
   private void subscribeToRoomChannel() {
     redisConnection.handler(message -> {
-      if (message.get(0).toString().equals("message")) {
+      if ("message".equals(message.get(0).toString())) {
         webSocket.writeTextMessage(message.get(2).toString());
       }
     });
