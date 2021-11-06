@@ -15,19 +15,29 @@ import org.slf4j.LoggerFactory;
 
 public class ChatVerticle extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(ChatVerticle.class);
-  private final Integer port;
+  private final int servicePort;
+  private final String redisConnectionString;
   private Redis redis;
   private RoomService roomService;
+  private int actualServicePort;
 
-  public ChatVerticle(Integer port) {
-    this.port = port;
+  public static ChatVerticle fromConfiguration(Configuration configuration) {
+    return new ChatVerticle(
+        configuration.servicePort(),
+        configuration.redisConnectionString()
+    );
+  }
+  public ChatVerticle(int servicePort, String redisConnectionString) {
+    this.servicePort = servicePort;
+    this.redisConnectionString = redisConnectionString;
   }
 
   @Override
   public Completable rxStart() {
-    redis = Redis.createClient(vertx, new RedisOptions().setConnectionString(
-        "redis://127.0.0.1:10000"
-    ));
+    redis = Redis.createClient(
+        vertx,
+        new RedisOptions().setConnectionString(redisConnectionString)
+    );
     roomService = new RoomService(redis);
 
     final var router = Router.router(vertx);
@@ -40,9 +50,16 @@ public class ChatVerticle extends AbstractVerticle {
     return vertx
         .createHttpServer(options)
         .requestHandler(router)
-        .listen(port)
-        .doOnSuccess(result -> logger.info("Listening on port {}", result.actualPort()))
+        .listen(servicePort)
+        .doOnSuccess(result -> {
+          actualServicePort = result.actualPort();
+          logger.info("Listening on port {}", result.actualPort());
+        })
         .ignoreElement();
+  }
+
+  public int actualServicePort() {
+    return actualServicePort;
   }
 
   private Maybe<Object> chat(RoutingContext routingContext) {
