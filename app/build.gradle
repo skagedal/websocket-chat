@@ -43,11 +43,13 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:all" << "-Werror"
 }
 
-spotless {
-    java {
-        googleJavaFormat()
-    }
-}
+// Spotless disabled due to issue: https://github.com/diffplug/spotless/issues/941
+
+//spotless {
+//    java {
+//        googleJavaFormat()
+//    }
+//}
 
 tasks.named('test') {
     useJUnitPlatform()
