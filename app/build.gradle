@@ -62,6 +62,9 @@ pmd {
 // Testing
 
 test {
+    systemProperty "vertx.logger-delegate-factory-class-name", "io.vertx.core.logging.SLF4JLogDelegateFactory"
+//    systemProperty "org.slf4j.simpleLogger.defaultLogLevel", "debug"
+    testLogging.showStandardStreams = true
     useJUnitPlatform()
     finalizedBy jacocoTestReport
 }

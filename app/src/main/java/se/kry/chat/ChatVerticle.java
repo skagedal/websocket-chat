@@ -5,6 +5,7 @@ import io.reactivex.rxjava3.core.Maybe;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.redis.client.RedisOptions;
 import io.vertx.rxjava3.core.AbstractVerticle;
+import io.vertx.rxjava3.core.http.HttpServer;
 import io.vertx.rxjava3.ext.web.Router;
 import io.vertx.rxjava3.ext.web.RoutingContext;
 import io.vertx.rxjava3.redis.client.Redis;
@@ -12,6 +13,7 @@ import io.vertx.rxjava3.redis.client.RedisAPI;
 import io.vertx.rxjava3.redis.client.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.kry.chat.utils.RxLogging;
 
 public class ChatVerticle extends AbstractVerticle {
   private static final Logger logger = LoggerFactory.getLogger(ChatVerticle.class);
@@ -44,18 +46,21 @@ public class ChatVerticle extends AbstractVerticle {
     router.get("/_health").respond(this::health);
     router.get("/chat/:room").respond(this::chat);
 
-    final var options = new HttpServerOptions()
+    final var httpServerOptions = new HttpServerOptions()
         .setLogActivity(true);
 
     return vertx
-        .createHttpServer(options)
+        .createHttpServer(httpServerOptions)
         .requestHandler(router)
         .listen(servicePort)
-        .doOnSuccess(result -> {
-          actualServicePort = result.actualPort();
-          logger.info("Listening on port {}", result.actualPort());
-        })
+        .doOnSuccess(this::storeActualPort)
+        .to(RxLogging.logSingle(logger, "listening for requests", options ->
+            options.includeValue(HttpServer::actualPort)))
         .ignoreElement();
+  }
+
+  private void storeActualPort(HttpServer server) {
+    actualServicePort = server.actualPort();
   }
 
   public int actualServicePort() {
