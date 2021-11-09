@@ -1,11 +1,5 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
     id "application"
     id "pmd"
@@ -84,11 +78,11 @@ jacocoTestReport {
     }
 }
 
-// Spotless disabled due to issue: https://github.com/diffplug/spotless/issues/941
+// Spotless disabled due to issue: https://github.com/diffplug/spotless/issues/834
 
 spotless {
     java {
-        googleJavaFormat()
+//        googleJavaFormat()
     }
 }
 
