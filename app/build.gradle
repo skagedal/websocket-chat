@@ -78,7 +78,7 @@ jacocoTestReport {
     }
 }
 
-// Spotless disabled due to issue: https://github.com/diffplug/spotless/issues/834
+// Spotless
 
 spotless {
     java {
