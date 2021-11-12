@@ -1,5 +1,6 @@
 package se.kry.chat.testing;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.utility.DockerImageName;
 
@@ -10,6 +11,7 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
     super(name);
   }
 
+  @SuppressFBWarnings(value = "MS_EXPOSE_REP", justification = "Dependency injection")
   public static synchronized RedisContainer sharedContainer() {
     if (containerInstance == null) {
       containerInstance = createContainer();

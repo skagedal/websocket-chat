@@ -5,6 +5,7 @@ plugins {
     id "pmd"
     id "jacoco"
     id "com.diffplug.spotless" version "6.0.0"
+    id "com.github.spotbugs" version "4.7.9"
     id "com.github.ben-manes.versions" version "0.39.0"
 }
 
@@ -23,6 +24,8 @@ dependencies {
     implementation "org.slf4j:slf4j-api:1.7.32"
     runtimeOnly "org.slf4j:slf4j-simple:1.7.32"
 
+    compileOnly "com.github.spotbugs:spotbugs-annotations:4.5.0"
+
     if (Os.isFamily(Os.FAMILY_MAC)) {
         runtimeOnly("io.netty:netty-resolver-dns-native-macos::osx-x86_64")
     }
@@ -31,6 +34,7 @@ dependencies {
     testImplementation "io.vertx:vertx-junit5:4.2.1"
     testImplementation "org.testcontainers:testcontainers:1.16.2"
     testImplementation "org.testcontainers:junit-jupiter:1.16.2"
+    testCompileOnly "com.github.spotbugs:spotbugs-annotations:4.5.0"
 }
 
 application {
@@ -47,10 +51,34 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:all" << "-Werror"
 }
 
+// PMD
+
 pmd {
     //  consoleOutput = true
     ruleSets = []
     ruleSetConfig = resources.text.fromFile("pmd.xml")
+}
+
+// Spotbugs
+
+spotbugsMain {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
+}
+
+spotbugsTest {
+    reports {
+        html {
+            enabled = true
+            destination = file("$buildDir/reports/spotbugs/test/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
 
 // Testing

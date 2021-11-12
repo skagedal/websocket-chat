@@ -1,5 +1,6 @@
 package se.kry.chat;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.vertx.rxjava3.core.buffer.Buffer;
 import io.vertx.rxjava3.core.http.ServerWebSocket;
 import io.vertx.rxjava3.redis.client.RedisAPI;
@@ -18,6 +19,7 @@ public class RoomConnection {
   private final RedisConnection redisConnection;
   private final RedisAPI redisAPI;
 
+  @SuppressFBWarnings(value = "EI_EXPOSE_REP2", justification = "Dependency injection")
   public RoomConnection(
       String room, String username, ServerWebSocket webSocket, RedisConnection redisConnection) {
     this.roomContentsKey = "contents_" + room;
