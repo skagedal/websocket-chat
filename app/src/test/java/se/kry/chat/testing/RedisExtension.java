@@ -13,13 +13,15 @@ public class RedisExtension implements ParameterResolver, BeforeEachCallback {
   private final Vertx vertx = Vertx.vertx();
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public boolean supportsParameter(
+      ParameterContext parameterContext, ExtensionContext extensionContext) {
     final var type = parameterContext.getParameter().getType();
     return type.isAssignableFrom(Redis.class);
   }
 
   @Override
-  public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public Object resolveParameter(
+      ParameterContext parameterContext, ExtensionContext extensionContext) {
     final var type = parameterContext.getParameter().getType();
     if (type.isAssignableFrom(Redis.class)) {
       return createClient();
@@ -37,5 +39,4 @@ public class RedisExtension implements ParameterResolver, BeforeEachCallback {
     final var connectionString = RedisContainer.sharedContainer().connectionString();
     return Redis.createClient(vertx, connectionString);
   }
-
 }

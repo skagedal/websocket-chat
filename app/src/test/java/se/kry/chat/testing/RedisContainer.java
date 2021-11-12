@@ -19,13 +19,10 @@ public class RedisContainer extends GenericContainer<RedisContainer> {
   }
 
   public String connectionString() {
-    return String.format(
-        "redis://%s:%d", getHost(), getFirstMappedPort()
-    );
+    return String.format("redis://%s:%d", getHost(), getFirstMappedPort());
   }
 
   private static RedisContainer createContainer() {
-    return new RedisContainer(DockerImageName.parse("redis:5.0.3-alpine"))
-        .withExposedPorts(6379);
+    return new RedisContainer(DockerImageName.parse("redis:5.0.3-alpine")).withExposedPorts(6379);
   }
 }

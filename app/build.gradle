@@ -82,7 +82,7 @@ jacocoTestReport {
 
 spotless {
     java {
-//        googleJavaFormat()
+        googleJavaFormat()
     }
 }
 

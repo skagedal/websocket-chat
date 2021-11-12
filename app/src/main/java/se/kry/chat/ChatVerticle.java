@@ -24,11 +24,9 @@ public class ChatVerticle extends AbstractVerticle {
   private int actualServicePort;
 
   public static ChatVerticle fromConfiguration(Configuration configuration) {
-    return new ChatVerticle(
-        configuration.servicePort(),
-        configuration.redisConnectionString()
-    );
+    return new ChatVerticle(configuration.servicePort(), configuration.redisConnectionString());
   }
+
   public ChatVerticle(int servicePort, String redisConnectionString) {
     this.servicePort = servicePort;
     this.redisConnectionString = redisConnectionString;
@@ -36,26 +34,26 @@ public class ChatVerticle extends AbstractVerticle {
 
   @Override
   public Completable rxStart() {
-    redis = Redis.createClient(
-        vertx,
-        new RedisOptions().setConnectionString(redisConnectionString)
-    );
+    redis =
+        Redis.createClient(vertx, new RedisOptions().setConnectionString(redisConnectionString));
     roomService = new RoomService(redis);
 
     final var router = Router.router(vertx);
     router.get("/_health").respond(this::health);
     router.get("/chat/:room").respond(this::chat);
 
-    final var httpServerOptions = new HttpServerOptions()
-        .setLogActivity(true);
+    final var httpServerOptions = new HttpServerOptions().setLogActivity(true);
 
     return vertx
         .createHttpServer(httpServerOptions)
         .requestHandler(router)
         .listen(servicePort)
         .doOnSuccess(this::storeActualPort)
-        .to(RxLogging.logSingle(logger, "listening for requests", options ->
-            options.includeValue(HttpServer::actualPort)))
+        .to(
+            RxLogging.logSingle(
+                logger,
+                "listening for requests",
+                options -> options.includeValue(HttpServer::actualPort)))
         .ignoreElement();
   }
 
@@ -70,11 +68,10 @@ public class ChatVerticle extends AbstractVerticle {
   private Maybe<Object> chat(RoutingContext routingContext) {
     final var room = routingContext.pathParam("room");
     final var name = routingContext.queryParam("username").get(0);
-    return routingContext.request()
+    return routingContext
+        .request()
         .toWebSocket()
-        .doOnSuccess(webSocket ->
-            roomService.enterRoom(webSocket, room, name)
-        )
+        .doOnSuccess(webSocket -> roomService.enterRoom(webSocket, room, name))
         .flatMapMaybe(__ -> Maybe.just(new Object()));
   }
 
@@ -85,7 +82,5 @@ public class ChatVerticle extends AbstractVerticle {
         .map(count -> new Health("healthy", count));
   }
 
-  public static record Health(String message, long count) {
-  }
+  public static record Health(String message, long count) {}
 }
-

@@ -18,7 +18,8 @@ public class RoomConnection {
   private final RedisConnection redisConnection;
   private final RedisAPI redisAPI;
 
-  public RoomConnection(String room, String username, ServerWebSocket webSocket, RedisConnection redisConnection) {
+  public RoomConnection(
+      String room, String username, ServerWebSocket webSocket, RedisConnection redisConnection) {
     this.roomContentsKey = "contents_" + room;
     this.roomChannelKey = "channel_" + room;
     this.username = username;
@@ -35,10 +36,11 @@ public class RoomConnection {
 
   private void handleWebSocket() {
     webSocket
-        .handler(buffer -> {
-          logger.info("Received {}", buffer);
-          publishMessage(buffer);
-        })
+        .handler(
+            buffer -> {
+              logger.info("Received {}", buffer);
+              publishMessage(buffer);
+            })
         .closeHandler(__ -> logger.info("Close handler called"))
         .drainHandler(__ -> logger.info("Drain handler called"))
         .endHandler(__ -> logger.info("End handler called"));
@@ -48,14 +50,12 @@ public class RoomConnection {
     redisAPI
         .lrange(roomContentsKey, "-10", "-1")
         .subscribe(
-            this::writeAllMessages,
-            throwable -> logger.error("Fetching messages", throwable)
-        )
+            this::writeAllMessages, throwable -> logger.error("Fetching messages", throwable))
         .isDisposed();
   }
 
   private void writeAllMessages(Response response) {
-    for(var message : response) {
+    for (var message : response) {
       webSocket.writeTextMessage(message.toString());
     }
   }
@@ -67,11 +67,12 @@ public class RoomConnection {
   }
 
   private void subscribeToRoomChannel() {
-    redisConnection.handler(message -> {
-      if ("message".equals(message.get(0).toString())) {
-        webSocket.writeTextMessage(message.get(2).toString());
-      }
-    });
+    redisConnection.handler(
+        message -> {
+          if ("message".equals(message.get(0).toString())) {
+            webSocket.writeTextMessage(message.get(2).toString());
+          }
+        });
     redisAPI.subscribe(List.of(roomChannelKey));
   }
 }

@@ -15,18 +15,18 @@ public class AppExtension implements ParameterResolver, BeforeEachCallback {
   private static AppTestContext testContextInstance;
 
   @Override
-  public void beforeEach(ExtensionContext context) {
-
-  }
+  public void beforeEach(ExtensionContext context) {}
 
   @Override
-  public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public boolean supportsParameter(
+      ParameterContext parameterContext, ExtensionContext extensionContext) {
     final var type = parameterContext.getParameter().getType();
     return type.isAssignableFrom(AppTestContext.class);
   }
 
   @Override
-  public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+  public Object resolveParameter(
+      ParameterContext parameterContext, ExtensionContext extensionContext) {
     final var type = parameterContext.getParameter().getType();
     if (type.isAssignableFrom(AppTestContext.class)) {
       return sharedTestContext();
@@ -36,21 +36,16 @@ public class AppExtension implements ParameterResolver, BeforeEachCallback {
 
   private static synchronized AppTestContext sharedTestContext() {
     if (testContextInstance == null) {
-      final var configuration = Configuration.testing(RedisContainer.sharedContainer().connectionString());
+      final var configuration =
+          Configuration.testing(RedisContainer.sharedContainer().connectionString());
       final var verticle = App.deployVerticle(vertx, configuration).blockingGet().verticle();
-      testContextInstance = new AppTestContext(
-          createWebClient(verticle.actualServicePort())
-      );
+      testContextInstance = new AppTestContext(createWebClient(verticle.actualServicePort()));
     }
     return testContextInstance;
   }
 
   private static WebClient createWebClient(int port) {
     return WebClient.create(
-        vertx,
-        new WebClientOptions()
-            .setLogActivity(true)
-            .setDefaultPort(port)
-    );
+        vertx, new WebClientOptions().setLogActivity(true).setDefaultPort(port));
   }
 }

@@ -20,13 +20,12 @@ public class RoomService {
         .connect()
         .subscribe(
             connection -> startConnection(room, username, webSocket, connection),
-            throwable -> logger.error("Connecting to Redis", throwable)
-        )
+            throwable -> logger.error("Connecting to Redis", throwable))
         .isDisposed();
   }
 
-  private void startConnection(String room, String username, ServerWebSocket webSocket, RedisConnection connection) {
-    new RoomConnection(room, username, webSocket, connection)
-        .start();
+  private void startConnection(
+      String room, String username, ServerWebSocket webSocket, RedisConnection connection) {
+    new RoomConnection(room, username, webSocket, connection).start();
   }
 }

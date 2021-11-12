@@ -6,11 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.kry.chat.utils.RxLogging;
 
-final public class App {
+public final class App {
   private static final Logger logger = LoggerFactory.getLogger(App.class);
 
-  private App() {
-  }
+  private App() {}
 
   public static void main(String[] args) {
     deploy(Configuration.defaultLocal(args));
@@ -20,12 +19,16 @@ final public class App {
     deployVerticle(Vertx.vertx(), configuration).subscribe();
   }
 
-  public static Single<DeployedChatVerticle> deployVerticle(Vertx vertx, Configuration configuration) {
+  public static Single<DeployedChatVerticle> deployVerticle(
+      Vertx vertx, Configuration configuration) {
     final var verticle = ChatVerticle.fromConfiguration(configuration);
     return vertx
         .rxDeployVerticle(verticle)
         .map(deploymentId -> new DeployedChatVerticle(verticle, deploymentId))
-        .to(RxLogging.logSingle(logger, "deploying chat verticle", options -> options
-            .includeValue(DeployedChatVerticle::deploymentId)));
+        .to(
+            RxLogging.logSingle(
+                logger,
+                "deploying chat verticle",
+                options -> options.includeValue(DeployedChatVerticle::deploymentId)));
   }
 }

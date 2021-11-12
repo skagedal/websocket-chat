@@ -6,8 +6,7 @@ import java.util.function.Function;
 import org.slf4j.Logger;
 
 public final class RxLogging {
-  private RxLogging() {
-  }
+  private RxLogging() {}
 
   public static <T> SingleConverter<T, Single<T>> logSingle(Logger logger, String operation) {
     return logSingle(logger, operation, Function.identity());
@@ -18,16 +17,18 @@ public final class RxLogging {
       String operation,
       Function<SingleLogOptions<T>, SingleLogOptions<T>> optionModifiers) {
     final var options = optionModifiers.apply(new SingleLogOptions<>());
-    return upstream -> upstream
-        .doOnSubscribe(__ -> logger.info("Subscribe: " + operation))
-        .doOnError(throwable -> logger.error("Error: " + operation))
-        .doOnSuccess(value -> {
-          if (options.valueConverter != null) {
-            logger.info("Success: {} - {}", operation, options.valueConverter.apply(value));
-          } else {
-            logger.info("Success: {}", operation);
-          }
-        });
+    return upstream ->
+        upstream
+            .doOnSubscribe(__ -> logger.info("Subscribe: " + operation))
+            .doOnError(throwable -> logger.error("Error: " + operation))
+            .doOnSuccess(
+                value -> {
+                  if (options.valueConverter != null) {
+                    logger.info("Success: {} - {}", operation, options.valueConverter.apply(value));
+                  } else {
+                    logger.info("Success: {}", operation);
+                  }
+                });
   }
 
   public static class SingleLogOptions<T> {
@@ -42,6 +43,5 @@ public final class RxLogging {
       this.valueConverter = valueConverter;
       return this;
     }
-
   }
 }
