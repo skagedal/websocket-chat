@@ -64,17 +64,34 @@ public class RoomConnection {
 
   private void publishMessage(Buffer buffer) {
     final var message = String.format("%s: %s", username, buffer.toString());
-    redisAPI.rpush(List.of(roomContentsKey, message.strip()));
-    redisAPI.publish(roomChannelKey, message);
+    redisAPI
+        .rpush(List.of(roomContentsKey, message.strip()))
+        .toSingle()
+        .flatMap(response -> redisAPI.publish(roomChannelKey, message).toSingle())
+        .subscribe(
+            response -> logger.info("Publishing message: success, response {}", response),
+            error -> logger.error("Publishing message: error", error))
+        .isDisposed();
   }
 
   private void subscribeToRoomChannel() {
     redisConnection.handler(
         message -> {
           if ("message".equals(message.get(0).toString())) {
-            webSocket.writeTextMessage(message.get(2).toString());
+            webSocket
+                .writeTextMessage(message.get(2).toString())
+                .subscribe(
+                    () -> logger.info("Writing message to websocket: success"),
+                    error -> logger.error("Writing message to websocket: error", error))
+                .isDisposed();
           }
         });
-    redisAPI.subscribe(List.of(roomChannelKey));
+    redisAPI
+        .subscribe(List.of(roomChannelKey))
+        .toSingle()
+        .subscribe(
+            response -> logger.info("Success in subscribing: {}", response),
+            error -> logger.info("Error in subscribing", error))
+        .isDisposed();
   }
 }

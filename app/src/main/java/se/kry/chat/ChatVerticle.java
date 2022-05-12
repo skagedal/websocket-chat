@@ -72,6 +72,7 @@ public class ChatVerticle extends AbstractVerticle {
         .request()
         .toWebSocket()
         .doOnSuccess(webSocket -> roomService.enterRoom(webSocket, room, name))
+        .doOnError(error -> logger.error("Error when entering room", error))
         .flatMapMaybe(__ -> Maybe.just(new Object()));
   }
 

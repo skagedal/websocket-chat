@@ -24,5 +24,5 @@ Run App in IntelliJ.
 
 Then:
 ```shell
-websocat ws://127.0.0.1:10001/chat
+websocat ws://127.0.0.1:10001/chat/myroom?userName=myusername
 ```
