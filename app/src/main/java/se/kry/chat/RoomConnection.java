@@ -1,6 +1,7 @@
 package se.kry.chat;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.vertx.redis.client.ResponseType;
 import io.vertx.rxjava3.core.buffer.Buffer;
 import io.vertx.rxjava3.core.http.ServerWebSocket;
 import io.vertx.rxjava3.redis.client.RedisAPI;
@@ -75,23 +76,38 @@ public class RoomConnection {
   }
 
   private void subscribeToRoomChannel() {
-    redisConnection.handler(
-        message -> {
-          if ("message".equals(message.get(0).toString())) {
-            webSocket
-                .writeTextMessage(message.get(2).toString())
-                .subscribe(
-                    () -> logger.info("Writing message to websocket: success"),
-                    error -> logger.error("Writing message to websocket: error", error))
-                .isDisposed();
-          }
-        });
+    redisConnection.handler(this::handleRedisMessage);
     redisAPI
         .subscribe(List.of(roomChannelKey))
-        .toSingle()
         .subscribe(
             response -> logger.info("Success in subscribing: {}", response),
-            error -> logger.info("Error in subscribing", error))
+            error -> logger.info("Error in subscribing", error),
+            () -> logger.info("Completed subscribing to Redis")
+        )
         .isDisposed();
+  }
+
+  private void handleRedisMessage(Response message) {
+    switch (message.type()) {
+      case SIMPLE -> logger.warn("Simple message from Redis: {}", message);
+      case ERROR -> logger.error("Error from Redis: {}", message);
+      case BOOLEAN -> logger.warn("Boolean from Redis: {}", message);
+      case NUMBER -> logger.warn("Number from Redis: {}", message);
+      case BULK -> logger.warn("Bulk message from Redis: {}", message);
+      case PUSH -> logger.info("Push from Redis: {}", message);
+      case ATTRIBUTE -> logger.warn("Attribute from Redis: {}", message);
+      case MULTI -> {
+        if (message.size() == 3 && message.get(0).toString().equals("message")) {
+          webSocket
+              .writeTextMessage(message.get(2).toString())
+              .subscribe(
+                  () -> logger.info("Writing message to websocket: success"),
+                  error -> logger.error("Writing message to websocket: error", error))
+              .isDisposed();
+        } else {
+          logger.warn("Unknown Multi from Redis: {}", message);
+        }
+      }
+    }
   }
 }

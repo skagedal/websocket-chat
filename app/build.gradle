@@ -26,6 +26,7 @@ dependencies {
     implementation "io.vertx:vertx-web-client"
     implementation "io.vertx:vertx-redis-client"
     implementation "io.vertx:vertx-rx-java3"
+    implementation "io.vertx:vertx-dropwizard-metrics"
     implementation "com.fasterxml.jackson.core:jackson-databind:${versions.jackson}"
     implementation "org.slf4j:slf4j-api:1.7.36"
     runtimeOnly "ch.qos.logback:logback-classic:1.2.11"

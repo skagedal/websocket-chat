@@ -57,6 +57,11 @@ public class ChatVerticle extends AbstractVerticle {
         .ignoreElement();
   }
 
+  @Override
+  public Completable rxStop() {
+    return Completable.fromAction(() -> logger.info("Shutting down verticle"));
+  }
+
   private void storeActualPort(HttpServer server) {
     actualServicePort = server.actualPort();
   }
@@ -66,14 +71,16 @@ public class ChatVerticle extends AbstractVerticle {
   }
 
   private Maybe<Object> chat(RoutingContext routingContext) {
+    logger.info("Received request to chat");
     final var room = routingContext.pathParam("room");
     final var name = routingContext.queryParam("username").get(0);
     return routingContext
         .request()
         .toWebSocket()
+        .doOnSuccess(webSocket -> logger.info("Successfully got a websocket: {}", webSocket))
         .doOnSuccess(webSocket -> roomService.enterRoom(webSocket, room, name))
         .doOnError(error -> logger.error("Error when entering room", error))
-        .flatMapMaybe(__ -> Maybe.just(new Object()));
+        .ignoreElement().andThen(Maybe.empty());
   }
 
   private Maybe<Health> health(RoutingContext ignoredRoutingContext) {
