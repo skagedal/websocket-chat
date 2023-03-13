@@ -94,7 +94,16 @@ public class RoomConnection {
       case BOOLEAN -> logger.warn("Boolean from Redis: {}", message);
       case NUMBER -> logger.warn("Number from Redis: {}", message);
       case BULK -> logger.warn("Bulk message from Redis: {}", message);
-      case PUSH -> logger.info("Push from Redis: {}", message);
+      case PUSH -> {
+        webSocket
+            .writeTextMessage(message.get(2).toString())
+            .subscribe(
+                () -> logger.info("Writing message to websocket: success"),
+                error -> logger.error("Writing message to websocket: error", error)
+            )
+            .isDisposed();
+        logger.info("Push from Redis: {}", message);
+      }
       case ATTRIBUTE -> logger.warn("Attribute from Redis: {}", message);
       case MULTI -> {
         if (message.size() == 3 && message.get(0).toString().equals("message")) {
