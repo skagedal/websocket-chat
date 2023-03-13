@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.vertx.core.VertxOptions;
 import io.vertx.ext.dropwizard.DropwizardMetricsOptions;
 import io.vertx.rxjava3.core.Vertx;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +31,12 @@ public final class App {
                 .setRegistryName("websocket-chat"))
     );
     MetricRegistry registry = SharedMetricRegistries.getOrCreate("websocket-chat");
-    ConsoleReporter.forRegistry(registry)
-        .filter(MetricFilter.contains("websocket"))
-        .build()
-        .start(10, TimeUnit.SECONDS);
+    if (Objects.equals(System.getenv("METRICS_CONSOLE_REPORTER"), "true")) {
+      ConsoleReporter.forRegistry(registry)
+          .filter(MetricFilter.contains("websocket"))
+          .build()
+          .start(10, TimeUnit.SECONDS);
+    }
     deployVerticle(vertx, Configuration.defaultLocal(args)).subscribe();
   }
 
